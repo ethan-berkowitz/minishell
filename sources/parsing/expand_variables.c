@@ -6,7 +6,7 @@
 /*   By: eberkowi <eberkowi@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/26 16:50:02 by eberkowi          #+#    #+#             */
-/*   Updated: 2024/10/07 14:24:14 by eberkowi         ###   ########.fr       */
+/*   Updated: 2024/10/09 16:18:22 by eberkowi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,38 +38,37 @@ static void free_and_exit_failed_var(t_main *main, int i)
 	exit (1);
 }
 
-static void find_var_and_remalloc(t_main *main, int i, char *env[])
+static void find_var_and_remalloc(t_main *main, int i)
 {
 	int len;
-	int j;
+	t_list *temp;
 
+	temp = main->env_list;
 	len = ft_strlen(main->split_input[i]);
-	j = 0;
-	while (env[j])
+	while (temp)
 	{
-		if (!strncmp_and_check_equals(main->split_input[i] + 1, env[j], len - 1))
+		if (!strncmp_and_check_equals(main->split_input[i] + 1, (char *)temp->content, len - 1))
 		{
 			free(main->split_input[i]);
 			main->split_input[i] = NULL;
-			main->split_input[i] = ft_strdup(env[j] + len);
+			main->split_input[i] = ft_strdup((char *)temp->content + len);
 			if (!main->split_input[i])
 				free_and_exit_failed_var(main, i + 1);
 			return ;
 		}
-		j++;
+		temp = temp->next;
 	}
 }
 
 void expand_variables(t_main *main)
 {
-	char *env[] = {"VARS=hello", "VAR=ls -l", "TILDA=a b c", NULL}; //REMOVE
 	int i;
 	
 	i = 0;
 	while(main->split_input[i])
 	{
 		if ((main->split_input[i])[0] == '$')
-			find_var_and_remalloc(main, i, env);
+			find_var_and_remalloc(main, i);
 		i++;
 	}
 }

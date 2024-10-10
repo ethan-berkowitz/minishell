@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: maheleni <maheleni@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: eberkowi <eberkowi@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/07/10 11:21:19 by eberkowi          #+#    #+#             */
-/*   Updated: 2024/10/10 14:18:02 by maheleni         ###   ########.fr       */
+/*   Updated: 2024/10/10 15:19:00 by eberkowi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@ typedef struct s_main
 	t_list	*env_list;
 	int		exit_code;  //exit code of the exit command given by user?
 	int 	num_of_pipes;
+	int		found_command;
 } t_main;
 
 typedef struct s_redirect_node t_redirect_node;
@@ -57,10 +58,6 @@ typedef struct s_tokens
 {
 	char	**command;
 	char	**heredoc_delimiter;
-	//char	**redirect_in;
-	//char	**redirect_out;
-	//bool    redirect_heredoc;
-	//char	**redirect_append;
 	t_redirect_node *infiles;
 	t_redirect_node *outfiles;
 }	t_tokens;
@@ -70,7 +67,7 @@ typedef struct s_tokens
 /*****************************************************************************/
 
 //display prompt, readline, and save it in history
-void	handle_inputs(char **input);
+int	handle_inputs(char **input);
 
 //error and exit for failed malloc in readline
 int	error_exit_handle_input(void);
@@ -107,22 +104,22 @@ void add_redirect_element(t_main *main, char *input, int *i, int split_index);
 void	exit_command(t_main *main);
 
 //Our own kind of tokenizing function of the input
-void tokenize(t_main *main, t_tokens **command);
+int tokenize(t_main *main, t_tokens **command);
 
 //Utility to check for redirection (< or >)
 int	is_redirect(char c);
 
 //Free command struct, free split_input, and exit with the given code
-void free_and_exit_spl_and_cmd(t_main *main, t_tokens **command, int code);
+void free_spl_and_cmd(t_main *main, t_tokens **command);
 
 //Free the command_token utilizing ft_free_split
-void free_command_token(t_main *main, t_tokens **command);
+void free_token_commands(t_main *main, t_tokens **command);
 
 //Free command tokens, command struct, and split_input, then exit with given code
 void free_all_and_exit(t_main *main, t_tokens **command, int code);
 
 //Checks for a syntax error where there are two redirects in a row or a redirect then NULL
-void check_for_redirect_error(t_main *main, t_tokens **command);
+int check_for_redirect_error(t_main *main, t_tokens **command);
 
 //Checks for and adds redirect_in and heredocs to the token struct
 void add_in_or_heredoc(t_main *main, t_tokens **command, int cmd_id, int *spl_id);
@@ -144,6 +141,17 @@ void add_command(t_main *main, t_tokens **command, int cmd_id, int *spl_id);
 
 //Expand the environment variables
 void expand_variables(t_main *main);
+
+//Utilities for creating and adding elements to a linked list
+t_redirect_node	*lstnew_redirect_node(char *name, int type);
+t_redirect_node	*lstlast_redirect_node(t_redirect_node *lst);
+void lstadd_back_redirect_node(t_redirect_node **lst, t_redirect_node *new);
+
+//Free the redirect linked lists of the tokens
+void free_token_redirects(t_main *main, t_tokens **tokens);
+
+//Free everything if a linked list node fails to malloc
+void free_and_exit_node_malloc_failed(t_main *main, t_tokens **tokens);
 
 /*****************************************************************************/
 	//ENVIRONMENT

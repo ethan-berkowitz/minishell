@@ -6,13 +6,13 @@
 /*   By: eberkowi <eberkowi@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/23 10:23:05 by eberkowi          #+#    #+#             */
-/*   Updated: 2024/10/08 10:39:26 by eberkowi         ###   ########.fr       */
+/*   Updated: 2024/10/10 15:13:13 by eberkowi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
-static void check_for_pipe_error(t_main *main, t_tokens **tokens)
+static int check_for_pipe_error(t_main *main, t_tokens **tokens)
 {
 	int i;
 
@@ -23,23 +23,28 @@ static void check_for_pipe_error(t_main *main, t_tokens **tokens)
 			&& !(main->split_input[i + 1]))
 		{
 				printf("Error: Pipe followed by NULL\n");
-				free_and_exit_spl_and_cmd(main, tokens, 2); //TODO change to not exit, just skip execution	
+				free_spl_and_cmd(main, tokens);
+				return (1);
 		}
 		i++;
 	}
+	return (0);
 }
 
 //Need to change redirect tokens to array of strings to hold multiple infiles/outfiles
 
-void tokenize(t_main *main, t_tokens **tokens)
+int tokenize(t_main *main, t_tokens **tokens)
 {
 	int cmd_id;
 	int spl_id;
 
-	check_for_pipe_error(main, tokens);
-	check_for_redirect_error(main, tokens);
+	if (check_for_pipe_error(main, tokens))
+		return (1);
+	if (check_for_redirect_error(main, tokens))
+		return (1);
 	cmd_id = 0;
 	spl_id = 0;
+	
 	while (cmd_id < main->num_of_pipes + 1)
 	{
 		add_in_or_heredoc(main, tokens, cmd_id, &spl_id);
@@ -49,7 +54,9 @@ void tokenize(t_main *main, t_tokens **tokens)
 		{
 			cmd_id++;
 			spl_id++;
+			main->found_command = 0;
 		}
 	}
+	return (0);
 	//TODO function for expanding heredocs with a temp_file that holds the input
 }

@@ -6,22 +6,28 @@
 /*   By: eberkowi <eberkowi@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/09/13 12:11:12 by eberkowi          #+#    #+#             */
-/*   Updated: 2024/09/18 13:49:28 by eberkowi         ###   ########.fr       */
+/*   Updated: 2024/10/10 14:00:45 by eberkowi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../includes/minishell.h"
 
-static void	display_prompt_and_wait_for_input(char **input)
+//Left off here, newlineand new prompt when no prompt!
+//It's the enviroment ! not fgreeing the env
+
+static int	display_prompt_and_wait_for_input(char **input)
 {
 	*input = readline("minishell: ");
-	if (!*input)
-		exit (error_exit_handle_input());
+	if (*input && *input[0] == '\0')
+		return (0);
+	return (1);
 }
 
-void handle_inputs(char **input)
+int handle_inputs(char **input)
 {
-	display_prompt_and_wait_for_input(input);
+	if (!display_prompt_and_wait_for_input(input))
+		return (0);
 	if (*input)
 		add_history(*input);
+	return (1);
 }
